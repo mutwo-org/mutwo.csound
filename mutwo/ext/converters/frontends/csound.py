@@ -13,7 +13,6 @@ import natsort  # type: ignore
 
 from mutwo.core import converters
 from mutwo.core import events
-from mutwo.core import parameters
 from mutwo.core.utilities import constants
 
 from mutwo.ext import converters as ext_converters
@@ -161,7 +160,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
     def _convert_simple_event(
         self,
         simple_event: events.basic.SimpleEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> tuple[str, ...]:
         """Extract p-field data from simple event and write one Csound-Score line."""
 
@@ -190,7 +189,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
     def _convert_sequential_event(
         self,
         sequential_event: events.basic.SequentialEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> tuple[str, ...]:
         csound_score_line_list = [
             ext_converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
@@ -209,7 +208,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
     def _convert_simultaneous_event(
         self,
         simultaneous_event: events.basic.SimultaneousEvent,
-        absolute_entry_delay: parameters.abc.DurationType,
+        absolute_entry_delay: constants.DurationType,
     ) -> tuple[str, ...]:
         csound_score_line_list = [
             ext_converters.frontends.csound_constants.SIMULTANEOUS_EVENT_ANNOTATION
@@ -239,8 +238,8 @@ class CsoundScoreConverter(converters.abc.EventConverter):
         :type path: str
 
         >>> import random
-        >>> from mutwo.parameters import pitches
         >>> from mutwo.events import basic
+        >>> from mutwo.ext.parameters import pitches
         >>> from mutwo.ext.converters.frontends import csound
         >>> converter = csound.CsoundScoreConverter(
         >>>    p4=lambda event: event.pitch.frequency

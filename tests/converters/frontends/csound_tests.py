@@ -3,24 +3,25 @@ import unittest
 
 from mutwo.core import events
 from mutwo.core import parameters
+from mutwo.core.utilities import constants
 
 from mutwo.ext import converters
 
 
 class SimpleEventWithPitchAndPathAttribute(events.basic.SimpleEvent):
-    """SimpleEvent with additional pitch and path attributes.
+    """SimpleEvent with additional frequency and path attributes.
 
     Only for testing purposes.
     """
 
     def __init__(
         self,
-        pitch: parameters.abc.Pitch,
-        duration: parameters.abc.DurationType,
+        frequency: float,
+        duration: constants.DurationType,
         path: str,
     ):
         super().__init__(duration)
-        self.pitch = pitch
+        self.frequency = frequency
         self.path = path
 
 
@@ -30,7 +31,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.converter = converters.frontends.csound.CsoundScoreConverter(
-            p4=lambda event: event.pitch.frequency,
+            p4=lambda event: event.frequency,
             p5=lambda event: event.path,
         )
 
@@ -42,33 +43,32 @@ class CsoundScoreConverterTest(unittest.TestCase):
     def test_convert_simple_event(self):
         duration = 2
         event_to_convert = SimpleEventWithPitchAndPathAttribute(
-            parameters.pitches.JustIntonationPitch(),
+            100,
             duration,
             "flute_sample.wav",
         )
         self.converter.convert(event_to_convert, self.test_path)
         expected_line = 'i 1 0 {} {} "{}"'.format(
             duration,
-            float(parameters.pitches_constants.DEFAULT_CONCERT_PITCH),
+            100,
             event_to_convert.path,
         )
         with open(self.test_path, "r") as f:
             self.assertEqual(f.read(), expected_line)
 
     def test_convert_sequential_event(self):
-        pitches = tuple(
-            parameters.pitches.JustIntonationPitch(ratio)
-            for ratio in ("3/2", "5/4", "1/2", "10/1", "8/1", "1/100")
-        )
-        durations = (2, 4, 3, 6.25, 8, 1)
+        frequency_tuple = (300, 100, 100, 320, 720, 500)
+        duration_tuple = (2, 4, 3, 6.25, 8, 1)
         paths = tuple(
             "flute_sample{}.wav".format(nth_sample)
-            for nth_sample, pitch in enumerate(pitches)
+            for nth_sample, _ in enumerate(frequency_tuple)
         )
         event_to_convert = events.basic.SequentialEvent(
             [
-                SimpleEventWithPitchAndPathAttribute(pitch, duration, path)
-                for pitch, duration, path in zip(pitches, durations, paths)
+                SimpleEventWithPitchAndPathAttribute(frequency, duration, path)
+                for frequency, duration, path in zip(
+                    frequency_tuple, duration_tuple, paths
+                )
             ]
         )
         self.converter.convert(event_to_convert, self.test_path)
@@ -80,10 +80,13 @@ class CsoundScoreConverterTest(unittest.TestCase):
         expected_lines.extend(
             [
                 'i 1 {} {} {} "{}"'.format(
-                    absolute_entry_delay, duration, pitch.frequency, path
+                    absolute_entry_delay, duration, frequency, path
                 )
-                for absolute_entry_delay, duration, pitch, path in zip(
-                    event_to_convert.absolute_time_tuple, durations, pitches, paths
+                for absolute_entry_delay, duration, frequency, path in zip(
+                    event_to_convert.absolute_time_tuple,
+                    duration_tuple,
+                    frequency_tuple,
+                    paths,
                 )
             ]
         )
@@ -104,17 +107,11 @@ class CsoundScoreConverterTest(unittest.TestCase):
         path = "flute.wav"
         event_to_convert = events.basic.SequentialEvent(
             [
-                SimpleEventWithPitchAndPathAttribute(
-                    parameters.pitches.JustIntonationPitch(), 2, path
-                ),
+                SimpleEventWithPitchAndPathAttribute(100, 2, path),
                 events.basic.SimpleEvent(2),
-                SimpleEventWithPitchAndPathAttribute(
-                    parameters.pitches.JustIntonationPitch(), 1, path
-                ),
+                SimpleEventWithPitchAndPathAttribute(300, 1, path),
                 events.basic.SimpleEvent(3.5),
-                SimpleEventWithPitchAndPathAttribute(
-                    parameters.pitches.JustIntonationPitch(), 4, path
-                ),
+                SimpleEventWithPitchAndPathAttribute(200, 4, path),
             ]
         )
         self.converter.convert(event_to_convert, self.test_path)
@@ -125,12 +122,12 @@ class CsoundScoreConverterTest(unittest.TestCase):
         expected_lines.extend(
             [
                 'i 1 {} {} {} "{}"'.format(
-                    absolute_entry_delay, event.duration, event.pitch.frequency, path
+                    absolute_entry_delay, event.duration, event.frequency, path
                 )
                 for absolute_entry_delay, event in zip(
                     event_to_convert.absolute_time_tuple, event_to_convert
                 )
-                if hasattr(event, "pitch")
+                if hasattr(event, "frequency")
             ]
         )
         expected_lines.extend(
@@ -147,19 +144,18 @@ class CsoundScoreConverterTest(unittest.TestCase):
             self.assertEqual(f.read(), expected_lines)
 
     def test_convert_simultaneous_event(self):
-        pitches = tuple(
-            parameters.pitches.JustIntonationPitch(ratio)
-            for ratio in ("3/2", "5/4", "1/2", "10/1", "8/1", "1/100")
-        )
-        durations = (2, 4, 3, 6.25, 8, 1)
+        frequency_tuple = (300, 100, 100, 320, 720, 500)
+        duration_tuple = (2, 4, 3, 6.25, 8, 1)
         paths = tuple(
             "flute_sample{}.wav".format(nth_sample)
-            for nth_sample, pitch in enumerate(pitches)
+            for nth_sample, _ in enumerate(frequency_tuple)
         )
         event_to_convert = events.basic.SimultaneousEvent(
             [
-                SimpleEventWithPitchAndPathAttribute(pitch, duration, path)
-                for pitch, duration, path in zip(pitches, durations, paths)
+                SimpleEventWithPitchAndPathAttribute(frequency, duration, path)
+                for frequency, duration, path in zip(
+                    frequency_tuple, duration_tuple, paths
+                )
             ]
         )
         self.converter.convert(event_to_convert, self.test_path)
@@ -169,8 +165,10 @@ class CsoundScoreConverterTest(unittest.TestCase):
         ]
         expected_lines.extend(
             [
-                'i 1 0 {} {} "{}"'.format(duration, pitch.frequency, path)
-                for duration, pitch, path in zip(durations, pitches, paths)
+                'i 1 0 {} {} "{}"'.format(duration, frequency, path)
+                for duration, frequency, path in zip(
+                    duration_tuple, frequency_tuple, paths
+                )
             ]
         )
         expected_lines.extend(
@@ -203,14 +201,15 @@ class CsoundScoreConverterTest(unittest.TestCase):
         # convert simple event with unsupported type (set) for path argument
         duration = 2
         event_to_convert = SimpleEventWithPitchAndPathAttribute(
-            parameters.pitches.JustIntonationPitch(),
+            440,
             duration,
-            set([1, 2, 3]),
+            # type set is unsupported
+            set([1, 2, 3]),  # type: ignore
         )
         self.converter.convert(event_to_convert, self.test_path)
         expected_line = "i 1 0 {} {}".format(
             duration,
-            float(parameters.pitches_constants.DEFAULT_CONCERT_PITCH),
+            440,
         )
         with open(self.test_path, "r") as f:
             self.assertEqual(f.read(), expected_line)
@@ -229,8 +228,8 @@ class CsoundConverterTest(unittest.TestCase):
                 " p4\nout asig\nendin"
             )
         cls.score_converter = converters.frontends.csound.CsoundScoreConverter(
-            p4=lambda event: event.pitch_list[0].frequency,
-            p5=lambda event: event.volume.amplitude,
+            p4=lambda event: event.frequency,
+            p5=lambda event: event.amplitude,
         )
         cls.converter = converters.frontends.csound.CsoundConverter(
             cls.orchestra_path, cls.score_converter
@@ -239,8 +238,9 @@ class CsoundConverterTest(unittest.TestCase):
         cls.event_to_convert = events.basic.SimpleEvent(
             2,
         )
-        cls.event_to_convert.pitch_list = [parameters.pitches.WesternPitch("d")]
-        cls.event_to_convert.volume = parameters.volumes.DirectVolume(0.85)
+        # monkey patching
+        cls.event_to_convert.frequency = 200  # type: ignore
+        cls.event_to_convert.amplitude = 0.85  # type: ignore
 
     @classmethod
     def tearDownClass(cls):

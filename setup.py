@@ -22,7 +22,7 @@ setuptools.setup(
     ],
     setup_requires=[],
     install_requires=[
-        "mutwo>=0.43.0, <1.0.0",
+        "mutwo>=0.49.0, <1.0.0",
         "natsort>=5.3.3, <6.0.0",
     ],
     extras_require=extras_require,
