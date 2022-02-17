@@ -8,7 +8,7 @@ extras_require = {"testing": ["nose", "coveralls"]}
 
 setuptools.setup(
     name="mutwo.ext-csound",
-    version="0.2.0",
+    version="0.3.0",
     license="GPL",
     description="example extension for event based framework for generative art",
     long_description=long_description,
@@ -18,11 +18,13 @@ setuptools.setup(
     url="https://github.com/mutwo-org/mutwo.ext-csound",
     project_urls={"Documentation": "https://mutwo.readthedocs.io/en/latest/"},
     packages=[
-        package for package in setuptools.find_packages() if package[:5] != "tests"
+        package
+        for package in setuptools.find_namespace_packages(include=["mutwo.*"])
+        if package[:5] != "tests"
     ],
     setup_requires=[],
     install_requires=[
-        "mutwo>=0.49.0, <1.0.0",
+        "mutwo.ext-core>=0.55.0, <1.0.0",
         "natsort>=5.3.3, <6.0.0",
     ],
     extras_require=extras_require,
