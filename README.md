@@ -9,7 +9,7 @@ Csound extension for event based library [mutwo](https://github.com/mutwo-org/mu
 
 This extension implements:
 
-- mutwo.ext.converters.frontends.abjad extension package.
+- `mutwo.csound_converters`
 
 ### Installation
 

@@ -11,21 +11,20 @@ import warnings
 
 import natsort  # type: ignore
 
-from mutwo.core import converters
-from mutwo.core import events
-from mutwo.core.utilities import constants
+from mutwo import core_converters
+from mutwo import core_events
+from mutwo import core_constants
+from mutwo import csound_converters
 
-from mutwo.ext import converters as ext_converters
+__all__ = ("EventToCsoundScore", "EventToSoundFile")
 
-__all__ = ("CsoundScoreConverter", "CsoundConverter")
-
-SupportedPFieldTypes = typing.Union[constants.Real, str]
+SupportedPFieldTypes = typing.Union[core_constants.Real, str]
 SupportedPFieldTypesForTypeChecker = typing.Union[numbers.Real, str]
-PFieldFunction = typing.Callable[[events.basic.SimpleEvent], SupportedPFieldTypes]
+PFieldFunction = typing.Callable[[core_events.SimpleEvent], SupportedPFieldTypes]
 PFieldDict = dict[str, typing.Optional[PFieldFunction]]
 
 
-class CsoundScoreConverter(converters.abc.EventConverter):
+class EventToCsoundScore(core_converters.abc.EventConverter):
     """Class to convert mutwo events to a Csound score file.
 
     :param pfield: p-field / p-field-extraction-function pairs.
@@ -33,7 +32,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
     This class helps generating score files for the `"domain-specific computer
     programming language for audio programming" Csound <http://www.csounds.com/>`_.
 
-    :class:`CsoundScoreConverter` extracts data from mutwo Events and assign it to
+    :class:`EventToCsoundScore` extracts data from mutwo Events and assign it to
     specific p-fields. The mapping of Event attributes to p-field values has
     to be defined by the user via keyword arguments during class initialization.
 
@@ -46,14 +45,14 @@ class CsoundScoreConverter(converters.abc.EventConverter):
     If p2 shall be assigned to the absolute entry delay of the event,
     it has to be set to None.
 
-    The :class:`CsoundScoreConverter` ignores any p-field that returns
+    The :class:`EventToCsoundScore` ignores any p-field that returns
     any unsupported p-field type (anything else than a string
-    or a number). If the returned type is a string, :class:`CsoundScoreConverter`
+    or a number). If the returned type is a string, :class:`EventToCsoundScore`
     automatically adds quotations marks around the string in the score file.
 
     All p-fields can be overwritten in the following manner:
 
-    >>> my_converter = CsoundScoreConverter(
+    >>> my_converter = EventToCsoundScore(
     >>>     p1=lambda event: 2,
     >>>     p4=lambda event: event.pitch.frequency,
     >>>     p5=lambda event: event.volume
@@ -159,8 +158,8 @@ class CsoundScoreConverter(converters.abc.EventConverter):
 
     def _convert_simple_event(
         self,
-        simple_event: events.basic.SimpleEvent,
-        absolute_entry_delay: constants.DurationType,
+        simple_event: core_events.SimpleEvent,
+        absolute_entry_delay: core_constants.DurationType,
     ) -> tuple[str, ...]:
         """Extract p-field data from simple event and write one Csound-Score line."""
 
@@ -178,7 +177,7 @@ class CsoundScoreConverter(converters.abc.EventConverter):
                     # if attribute couldn't be found, just make a rest
                     return tuple([])
 
-                p_field_value = CsoundScoreConverter._process_p_field_value(
+                p_field_value = EventToCsoundScore._process_p_field_value(
                     nth_p_field, p_field_value
                 )
                 if p_field_value is not None:
@@ -188,39 +187,35 @@ class CsoundScoreConverter(converters.abc.EventConverter):
 
     def _convert_sequential_event(
         self,
-        sequential_event: events.basic.SequentialEvent,
-        absolute_entry_delay: constants.DurationType,
+        sequential_event: core_events.SequentialEvent,
+        absolute_entry_delay: core_constants.DurationType,
     ) -> tuple[str, ...]:
         csound_score_line_list = [
-            ext_converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
+            csound_converters.constants.SEQUENTIAL_EVENT_ANNOTATION
         ]
         csound_score_line_list.extend(
             super()._convert_sequential_event(sequential_event, absolute_entry_delay)
         )
 
-        for _ in range(
-            ext_converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
-        ):
+        for _ in range(csound_converters.constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT):
             csound_score_line_list.append("")
 
         return tuple(csound_score_line_list)
 
     def _convert_simultaneous_event(
         self,
-        simultaneous_event: events.basic.SimultaneousEvent,
-        absolute_entry_delay: constants.DurationType,
+        simultaneous_event: core_events.SimultaneousEvent,
+        absolute_entry_delay: core_constants.DurationType,
     ) -> tuple[str, ...]:
         csound_score_line_list = [
-            ext_converters.frontends.csound_constants.SIMULTANEOUS_EVENT_ANNOTATION
+            csound_converters.constants.SIMULTANEOUS_EVENT_ANNOTATION
         ]
         csound_score_line_list.extend(
             super()._convert_simultaneous_event(
                 simultaneous_event, absolute_entry_delay
             )
         )
-        for _ in range(
-            ext_converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
-        ):
+        for _ in range(csound_converters.constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT):
             csound_score_line_list.append("")
         return tuple(csound_score_line_list)
 
@@ -228,20 +223,20 @@ class CsoundScoreConverter(converters.abc.EventConverter):
     #                             public api                                 #
     # ###################################################################### #
 
-    def convert(self, event_to_convert: events.abc.Event, path: str) -> None:
+    def convert(self, event_to_convert: core_events.abc.Event, path: str) -> None:
         """Render csound score file (.sco) from the passed event.
 
         :param event_to_convert: The event that shall be rendered to a csound score
             file.
-        :type event_to_convert: events.abc.Event
+        :type event_to_convert: core_events.abc.Event
         :param path: where to write the csound score file
         :type path: str
 
         >>> import random
         >>> from mutwo.events import basic
         >>> from mutwo.ext.parameters import pitches
-        >>> from mutwo.ext.converters.frontends import csound
-        >>> converter = csound.CsoundScoreConverter(
+        >>> from mutwo.ext.core_converters.frontends import csound
+        >>> converter = csound.EventToCsoundScore(
         >>>    p4=lambda event: event.pitch.frequency
         >>> )
         >>> events = basic.SequentialEvent(
@@ -261,18 +256,18 @@ class CsoundScoreConverter(converters.abc.EventConverter):
             f.write("\n".join(csound_score_line_tuple))
 
 
-class CsoundConverter(converters.abc.Converter):
+class EventToSoundFile(core_converters.abc.Converter):
     """Generate audio files with `Csound <http://www.csounds.com/>`_.
 
     :param csound_orchestra_path: Path to the csound orchestra (.orc) file.
-    :param csound_score_converter: The :class:`CsoundScoreConverter` that shall be used
+    :param csound_score_converter: The :class:`EventToCsoundScore` that shall be used
         to render the csound score file (.sco) from a mutwo event.
     :param *flag: Flag that shall be added when calling csound. Several of the supported
-        csound flags can be found in :mod:`mutwo.ext.converters.frontends.csound_constants`.
-    :param remove_score_file: Set to True if :class:`CsoundConverter` shall remove the
+        csound flags can be found in :mod:`mutwo.csound_converters.constants`.
+    :param remove_score_file: Set to True if :class:`EventToSoundFile` shall remove the
         csound score file after rendering. Defaults to False.
 
-    **Disclaimer:** Before using the :class:`CsoundConverter`, make sure
+    **Disclaimer:** Before using the :class:`EventToSoundFile`, make sure
     `Csound <http://www.csounds.com/>`_ has been correctly installed on
     your system.
     """
@@ -280,7 +275,7 @@ class CsoundConverter(converters.abc.Converter):
     def __init__(
         self,
         csound_orchestra_path: str,
-        csound_score_converter: CsoundScoreConverter,
+        csound_score_converter: EventToCsoundScore,
         *flag: str,
         remove_score_file: bool = False
     ):
@@ -291,14 +286,14 @@ class CsoundConverter(converters.abc.Converter):
 
     def convert(
         self,
-        event_to_convert: events.abc.Event,
+        event_to_convert: core_events.abc.Event,
         path: str,
         score_path: typing.Optional[str] = None,
     ) -> None:
         """Render sound file from the mutwo event.
 
         :param event_to_convert: The event that shall be rendered.
-        :type event_to_convert: events.abc.Event
+        :type event_to_convert: core_events.abc.Event
         :param path: where to write the sound file
         :type path: str
         :param score_path: where to write the score file

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2022-02-17
+
+### Changed
+- refactored `CsoundScoreConverter` to `EventToCsoundScore`
+- refactored `CsoundConverter` to `EventToSoundFile`
+- package structure to namespace package to apply refactor of mutwo main package
+
+
 ## [0.2.0] - 2022-01-11
 
 ### Changed

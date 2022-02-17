@@ -1,14 +1,14 @@
 import os
 import unittest
 
-from mutwo.core import events
-from mutwo.core import parameters
-from mutwo.core.utilities import constants
+from mutwo import core_events
+from mutwo import core_constants
+from mutwo import csound_converters
 
-from mutwo.ext import converters
+FILE_PATH = "/".join(os.path.realpath(__file__).split("/")[:-1])
 
 
-class SimpleEventWithPitchAndPathAttribute(events.basic.SimpleEvent):
+class SimpleEventWithPitchAndPathAttribute(core_events.SimpleEvent):
     """SimpleEvent with additional frequency and path attributes.
 
     Only for testing purposes.
@@ -17,7 +17,7 @@ class SimpleEventWithPitchAndPathAttribute(events.basic.SimpleEvent):
     def __init__(
         self,
         frequency: float,
-        duration: constants.DurationType,
+        duration: core_constants.DurationType,
         path: str,
     ):
         super().__init__(duration)
@@ -25,12 +25,12 @@ class SimpleEventWithPitchAndPathAttribute(events.basic.SimpleEvent):
         self.path = path
 
 
-class CsoundScoreConverterTest(unittest.TestCase):
-    test_path = "tests/converters/frontends/test.sco"
+class EventToCsoundScoreTest(unittest.TestCase):
+    test_path = f"{FILE_PATH}/test.sco"
 
     @classmethod
     def setUpClass(cls):
-        cls.converter = converters.frontends.csound.CsoundScoreConverter(
+        cls.converter = csound_converters.EventToCsoundScore(
             p4=lambda event: event.frequency,
             p5=lambda event: event.path,
         )
@@ -63,7 +63,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
             "flute_sample{}.wav".format(nth_sample)
             for nth_sample, _ in enumerate(frequency_tuple)
         )
-        event_to_convert = events.basic.SequentialEvent(
+        event_to_convert = core_events.SequentialEvent(
             [
                 SimpleEventWithPitchAndPathAttribute(frequency, duration, path)
                 for frequency, duration, path in zip(
@@ -73,9 +73,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert, self.test_path)
 
-        expected_lines = [
-            converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
-        ]
+        expected_lines = [csound_converters.constants.SEQUENTIAL_EVENT_ANNOTATION]
 
         expected_lines.extend(
             [
@@ -94,7 +92,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
             [
                 ""
                 for _ in range(
-                    converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+                    csound_converters.constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
                 )
             ]
         )
@@ -105,20 +103,18 @@ class CsoundScoreConverterTest(unittest.TestCase):
 
     def test_convert_sequential_event_with_rests(self):
         path = "flute.wav"
-        event_to_convert = events.basic.SequentialEvent(
+        event_to_convert = core_events.SequentialEvent(
             [
                 SimpleEventWithPitchAndPathAttribute(100, 2, path),
-                events.basic.SimpleEvent(2),
+                core_events.SimpleEvent(2),
                 SimpleEventWithPitchAndPathAttribute(300, 1, path),
-                events.basic.SimpleEvent(3.5),
+                core_events.SimpleEvent(3.5),
                 SimpleEventWithPitchAndPathAttribute(200, 4, path),
             ]
         )
         self.converter.convert(event_to_convert, self.test_path)
 
-        expected_lines = [
-            converters.frontends.csound_constants.SEQUENTIAL_EVENT_ANNOTATION
-        ]
+        expected_lines = [csound_converters.constants.SEQUENTIAL_EVENT_ANNOTATION]
         expected_lines.extend(
             [
                 'i 1 {} {} {} "{}"'.format(
@@ -134,7 +130,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
             [
                 ""
                 for _ in range(
-                    converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+                    csound_converters.constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
                 )
             ]
         )
@@ -150,7 +146,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
             "flute_sample{}.wav".format(nth_sample)
             for nth_sample, _ in enumerate(frequency_tuple)
         )
-        event_to_convert = events.basic.SimultaneousEvent(
+        event_to_convert = core_events.SimultaneousEvent(
             [
                 SimpleEventWithPitchAndPathAttribute(frequency, duration, path)
                 for frequency, duration, path in zip(
@@ -160,9 +156,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert, self.test_path)
 
-        expected_lines = [
-            converters.frontends.csound_constants.SIMULTANEOUS_EVENT_ANNOTATION
-        ]
+        expected_lines = [csound_converters.constants.SIMULTANEOUS_EVENT_ANNOTATION]
         expected_lines.extend(
             [
                 'i 1 0 {} {} "{}"'.format(duration, frequency, path)
@@ -175,7 +169,7 @@ class CsoundScoreConverterTest(unittest.TestCase):
             [
                 ""
                 for _ in range(
-                    converters.frontends.csound_constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+                    csound_converters.constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
                 )
             ]
         )
@@ -215,10 +209,10 @@ class CsoundScoreConverterTest(unittest.TestCase):
             self.assertEqual(f.read(), expected_line)
 
 
-class CsoundConverterTest(unittest.TestCase):
+class EventToSoundFileTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        common_path = "tests/converters/frontends"
+        common_path = FILE_PATH
         cls.orchestra_path = "{}/test.orc".format(common_path)
         cls.score_path = "{}/test.sco".format(common_path)
         cls.soundfile_path = "{}/test.wav".format(common_path)
@@ -227,15 +221,15 @@ class CsoundConverterTest(unittest.TestCase):
                 "sr=44100\nksmps=1\n0dbfs=1\nnchnls=1\ninstr 1\nasig poscil3 p5,"
                 " p4\nout asig\nendin"
             )
-        cls.score_converter = converters.frontends.csound.CsoundScoreConverter(
+        cls.score_converter = csound_converters.EventToCsoundScore(
             p4=lambda event: event.frequency,
             p5=lambda event: event.amplitude,
         )
-        cls.converter = converters.frontends.csound.CsoundConverter(
+        cls.converter = csound_converters.EventToSoundFile(
             cls.orchestra_path, cls.score_converter
         )
 
-        cls.event_to_convert = events.basic.SimpleEvent(
+        cls.event_to_convert = core_events.SimpleEvent(
             2,
         )
         # monkey patching
