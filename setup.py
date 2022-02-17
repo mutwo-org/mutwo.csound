@@ -10,7 +10,7 @@ setuptools.setup(
     name="mutwo.ext-csound",
     version="0.3.0",
     license="GPL",
-    description="example extension for event based framework for generative art",
+    description="csound extension for event based framework for generative art",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Levin Eric Zimmermann",
