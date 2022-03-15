@@ -73,7 +73,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert, self.test_path)
 
-        expected_lines = [csound_converters.constants.SEQUENTIAL_EVENT_ANNOTATION]
+        expected_lines = [csound_converters.configurations.SEQUENTIAL_EVENT_ANNOTATION]
 
         expected_lines.extend(
             [
@@ -92,7 +92,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
             [
                 ""
                 for _ in range(
-                    csound_converters.constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+                    csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
                 )
             ]
         )
@@ -114,7 +114,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert, self.test_path)
 
-        expected_lines = [csound_converters.constants.SEQUENTIAL_EVENT_ANNOTATION]
+        expected_lines = [csound_converters.configurations.SEQUENTIAL_EVENT_ANNOTATION]
         expected_lines.extend(
             [
                 'i 1 {} {} {} "{}"'.format(
@@ -130,7 +130,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
             [
                 ""
                 for _ in range(
-                    csound_converters.constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+                    csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
                 )
             ]
         )
@@ -156,7 +156,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert, self.test_path)
 
-        expected_lines = [csound_converters.constants.SIMULTANEOUS_EVENT_ANNOTATION]
+        expected_lines = [csound_converters.configurations.SIMULTANEOUS_EVENT_ANNOTATION]
         expected_lines.extend(
             [
                 'i 1 0 {} {} "{}"'.format(duration, frequency, path)
@@ -169,7 +169,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
             [
                 ""
                 for _ in range(
-                    csound_converters.constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+                    csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
                 )
             ]
         )

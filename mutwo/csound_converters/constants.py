@@ -1,4 +1,4 @@
-"""Constants to be used for and with :mod:`mutwo.converters.frontends.csound`.
+"""Constants to be used for and with :mod:`mutwo.csound_converters`.
 
 The file mostly contains different flags for running Csound.
 The flag definitions are documented
@@ -26,12 +26,3 @@ FORMAT_FLOAT = "--format=float"
 
 FORMAT_WAV = "--format=wav"
 """Flag for rendering sound files in wav file format."""
-
-SEQUENTIAL_EVENT_ANNOTATION = ";; NEW SEQUENTIAL EVENT\n;;"
-"""Annotation in Csound Score files when a new :class:`SequentialEvent` starts."""
-
-SIMULTANEOUS_EVENT_ANNOTATION = ";; NEW SIMULTANEOUS EVENT\n;;"
-"""Annotation in Csound Score files when a new :class:`SimultaneousEvent` starts."""
-
-N_EMPTY_LINES_AFTER_COMPLEX_EVENT = 1
-"""How many empty lines shall be written to a Csound Score file after a :class:`ComplexEvent`."""

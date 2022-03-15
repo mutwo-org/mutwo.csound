@@ -191,13 +191,13 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
         absolute_entry_delay: core_constants.DurationType,
     ) -> tuple[str, ...]:
         csound_score_line_list = [
-            csound_converters.constants.SEQUENTIAL_EVENT_ANNOTATION
+            csound_converters.configurations.SEQUENTIAL_EVENT_ANNOTATION
         ]
         csound_score_line_list.extend(
             super()._convert_sequential_event(sequential_event, absolute_entry_delay)
         )
 
-        for _ in range(csound_converters.constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT):
+        for _ in range(csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPLEX_EVENT):
             csound_score_line_list.append("")
 
         return tuple(csound_score_line_list)
@@ -208,14 +208,14 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
         absolute_entry_delay: core_constants.DurationType,
     ) -> tuple[str, ...]:
         csound_score_line_list = [
-            csound_converters.constants.SIMULTANEOUS_EVENT_ANNOTATION
+            csound_converters.configurations.SIMULTANEOUS_EVENT_ANNOTATION
         ]
         csound_score_line_list.extend(
             super()._convert_simultaneous_event(
                 simultaneous_event, absolute_entry_delay
             )
         )
-        for _ in range(csound_converters.constants.N_EMPTY_LINES_AFTER_COMPLEX_EVENT):
+        for _ in range(csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPLEX_EVENT):
             csound_score_line_list.append("")
         return tuple(csound_score_line_list)
 

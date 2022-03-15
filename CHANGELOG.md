@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-03-15
+
+### Changed
+- `constants` to `configurations` and `constants`
+
+
 ## [0.3.0] - 2022-02-17
 
 ### Changed
