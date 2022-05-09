@@ -261,7 +261,7 @@ class EventToSoundFile(core_converters.abc.Converter):
     """Generate audio files with `Csound <http://www.csounds.com/>`_.
 
     :param csound_orchestra_path: Path to the csound orchestra (.orc) file.
-    :param csound_score_converter: The :class:`EventToCsoundScore` that shall be used
+    :param event_to_csound_score: The :class:`EventToCsoundScore` that shall be used
         to render the csound score file (.sco) from a mutwo event.
     :param *flag: Flag that shall be added when calling csound. Several of the supported
         csound flags can be found in :mod:`mutwo.csound_converters.constants`.
@@ -276,13 +276,13 @@ class EventToSoundFile(core_converters.abc.Converter):
     def __init__(
         self,
         csound_orchestra_path: str,
-        csound_score_converter: EventToCsoundScore,
+        event_to_csound_score: EventToCsoundScore,
         *flag: str,
         remove_score_file: bool = False
     ):
         self.flags = flag
         self.csound_orchestra_path = csound_orchestra_path
-        self.csound_score_converter = csound_score_converter
+        self.event_to_csound_score = event_to_csound_score
         self.remove_score_file = remove_score_file
 
     def convert(
@@ -304,7 +304,7 @@ class EventToSoundFile(core_converters.abc.Converter):
         if not score_path:
             score_path = path + ".sco"
 
-        self.csound_score_converter.convert(event_to_convert, score_path)
+        self.event_to_csound_score.convert(event_to_convert, score_path)
         command = "csound -o {}".format(path)
         for flag in self.flags:
             command += " {} ".format(flag)
