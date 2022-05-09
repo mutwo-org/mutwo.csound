@@ -24,6 +24,14 @@ PFieldFunction = typing.Callable[[core_events.SimpleEvent], SupportedPFieldTypes
 PFieldDict = dict[str, typing.Optional[PFieldFunction]]
 
 
+class MissingPFieldWarning(Warning):
+    pass
+
+
+class InvalidPFieldValueTypeWarning(Warning):
+    pass
+
+
 class EventToCsoundScore(core_converters.abc.EventConverter):
     """Class to convert mutwo events to a Csound score file.
 
@@ -103,22 +111,23 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
             try:
                 assert number0 >= 0
             except AssertionError:
-                message = "Can't assign p-field '{}'. P-field number has to bigger than 0.".format(
-                    key0
+                raise ValueError(
+                    f"Can't assign p-field '{key0}'. "
+                    "P-field number has to bigger than 0."
                 )
-                raise ValueError(message)
 
             pfield_list.append(pfield_key_to_function_mapping[key0])
 
             difference = number1 - number0
             if difference > 1:
                 for _ in range(difference - 1):
-                    pfield_list.append(lambda event: 0)
-                message = "Couldn't find any mapping for p-fields between '{}' and '{}'. ".format(
-                    key0, key1
+                    pfield_list.append(lambda _: 0)
+                warnings.warn(
+                    "Couldn't find any mapping for p-fields "
+                    f"between '{key0}' and '{key1}'. "
+                    "Assigned these p-fields to 0.",
+                    MissingPFieldWarning,
                 )
-                message += "Assigned these p-fields to 0."
-                warnings.warn(message)
 
         pfield_list.append(pfield_key_to_function_mapping[key1])
         return tuple(pfield_list)
@@ -141,16 +150,14 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
 
         else:
             ignored_p_field = nth_p_field + 1
-            message = (
-                "Can't assign returned value '{}' of type '{}' to p-field {}.".format(
-                    p_field_value, type(p_field_value), ignored_p_field
-                )
+            warnings.warn(
+                f"Can't assign returned value '{p_field_value}' of type "
+                f"'{type(p_field_value)}' to p-field {ignored_p_field}. "
+                " Supported types for p-fields include "
+                f"'{repr(SupportedPFieldTypes)}'. "
+                "Ignored p-field {ignored_p_field}.",
+                InvalidPFieldValueTypeWarning,
             )
-            message += " Supported types for p-fields include '{}'. ".format(
-                repr(SupportedPFieldTypes)
-            )
-            message += "Ignored p-field {}.".format(ignored_p_field)
-            warnings.warn(message)
             return None
 
     # ###################################################################### #
@@ -198,7 +205,9 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
             super()._convert_sequential_event(sequential_event, absolute_entry_delay)
         )
 
-        for _ in range(csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPLEX_EVENT):
+        for _ in range(
+            csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+        ):
             csound_score_line_list.append("")
 
         return tuple(csound_score_line_list)
@@ -216,7 +225,9 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
                 simultaneous_event, absolute_entry_delay
             )
         )
-        for _ in range(csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPLEX_EVENT):
+        for _ in range(
+            csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+        ):
             csound_score_line_list.append("")
         return tuple(csound_score_line_list)
 
@@ -278,7 +289,7 @@ class EventToSoundFile(core_converters.abc.Converter):
         csound_orchestra_path: str,
         event_to_csound_score: EventToCsoundScore,
         *flag: str,
-        remove_score_file: bool = False
+        remove_score_file: bool = False,
     ):
         self.flags = flag
         self.csound_orchestra_path = csound_orchestra_path
