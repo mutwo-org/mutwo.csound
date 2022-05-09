@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2022-05-09
+
+### Changed
+- `EventToSoundFile` argument `csound_score_converter` to `event_to_csound_score`
+- improved warnings
+
+
 ## [0.4.0] - 2022-03-15
 
 ### Changed
