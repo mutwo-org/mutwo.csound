@@ -52,7 +52,8 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
 
     All p-fields can be overwritten in the following manner:
 
-    >>> my_converter = EventToCsoundScore(
+    >>> from mutwo import csound_converters
+    >>> my_converter = csound_converters.EventToCsoundScore(
     >>>     p1=lambda event: 2,
     >>>     p4=lambda event: event.pitch.frequency,
     >>>     p5=lambda event: event.volume
@@ -233,19 +234,19 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
         :type path: str
 
         >>> import random
-        >>> from mutwo.events import basic
-        >>> from mutwo.ext.parameters import pitches
-        >>> from mutwo.ext.core_converters.frontends import csound
-        >>> converter = csound.EventToCsoundScore(
+        >>> from mutwo import core_events
+        >>> from mutwo import csound_converters
+        >>> from mutwo import music_parameters
+        >>> converter = csound_converters.EventToCsoundScore(
         >>>    p4=lambda event: event.pitch.frequency
         >>> )
-        >>> events = basic.SequentialEvent(
+        >>> events = core_events.SequentialEvent(
         >>>    [
-        >>>        basic.SimpleEvent(random.uniform(0.3, 1.2)) for _ in range(15)
+        >>>        core_events.SimpleEvent(random.uniform(0.3, 1.2)) for _ in range(15)
         >>>    ]
         >>> )
         >>> for event in events:
-        >>>     event.pitch = pitches.DirectPitch(random.uniform(100, 500))
+        >>>     event.pitch = music_parameters.DirectPitch(random.uniform(100, 500))
         >>> converter.convert(events, 'score.sco')
         """
 
