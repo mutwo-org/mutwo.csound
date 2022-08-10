@@ -41,14 +41,14 @@ class EventToCsoundScoreTest(unittest.TestCase):
         os.remove(cls.test_path)
 
     def test_convert_simple_event(self):
-        duration = 2
+        duration = 2.0
         event_to_convert = SimpleEventWithPitchAndPathAttribute(
             100,
             duration,
             "flute_sample.wav",
         )
         self.converter.convert(event_to_convert, self.test_path)
-        expected_line = 'i 1 0 {} {} "{}"'.format(
+        expected_line = 'i 1 0.0 {} {} "{}"'.format(
             duration,
             100,
             event_to_convert.path,
@@ -73,12 +73,17 @@ class EventToCsoundScoreTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert, self.test_path)
 
-        expected_lines = [csound_converters.configurations.SEQUENTIAL_EVENT_ANNOTATION]
+        expected_line_list = [
+            csound_converters.configurations.SEQUENTIAL_EVENT_ANNOTATION
+        ]
 
-        expected_lines.extend(
+        expected_line_list.extend(
             [
                 'i 1 {} {} {} "{}"'.format(
-                    absolute_entry_delay, duration, frequency, path
+                    absolute_entry_delay.duration_in_floats,
+                    float(duration),
+                    frequency,
+                    path,
                 )
                 for absolute_entry_delay, duration, frequency, path in zip(
                     event_to_convert.absolute_time_tuple,
@@ -88,7 +93,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
                 )
             ]
         )
-        expected_lines.extend(
+        expected_line_list.extend(
             [
                 ""
                 for _ in range(
@@ -96,7 +101,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
                 )
             ]
         )
-        expected_lines = "\n".join(expected_lines)
+        expected_lines = "\n".join(expected_line_list)
 
         with open(self.test_path, "r") as f:
             self.assertEqual(f.read(), expected_lines)
@@ -114,11 +119,16 @@ class EventToCsoundScoreTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert, self.test_path)
 
-        expected_lines = [csound_converters.configurations.SEQUENTIAL_EVENT_ANNOTATION]
-        expected_lines.extend(
+        expected_line_list = [
+            csound_converters.configurations.SEQUENTIAL_EVENT_ANNOTATION
+        ]
+        expected_line_list.extend(
             [
                 'i 1 {} {} {} "{}"'.format(
-                    absolute_entry_delay, event.duration, event.frequency, path
+                    absolute_entry_delay.duration_in_floats,
+                    event.duration.duration_in_floats,
+                    event.frequency,
+                    path,
                 )
                 for absolute_entry_delay, event in zip(
                     event_to_convert.absolute_time_tuple, event_to_convert
@@ -126,7 +136,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
                 if hasattr(event, "frequency")
             ]
         )
-        expected_lines.extend(
+        expected_line_list.extend(
             [
                 ""
                 for _ in range(
@@ -134,7 +144,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
                 )
             ]
         )
-        expected_lines = "\n".join(expected_lines)
+        expected_lines = "\n".join(expected_line_list)
 
         with open(self.test_path, "r") as f:
             self.assertEqual(f.read(), expected_lines)
@@ -156,16 +166,18 @@ class EventToCsoundScoreTest(unittest.TestCase):
         )
         self.converter.convert(event_to_convert, self.test_path)
 
-        expected_lines = [csound_converters.configurations.SIMULTANEOUS_EVENT_ANNOTATION]
-        expected_lines.extend(
+        expected_line_list = [
+            csound_converters.configurations.SIMULTANEOUS_EVENT_ANNOTATION
+        ]
+        expected_line_list.extend(
             [
-                'i 1 0 {} {} "{}"'.format(duration, frequency, path)
+                'i 1 0.0 {} {} "{}"'.format(float(duration), frequency, path)
                 for duration, frequency, path in zip(
                     duration_tuple, frequency_tuple, paths
                 )
             ]
         )
-        expected_lines.extend(
+        expected_line_list.extend(
             [
                 ""
                 for _ in range(
@@ -173,7 +185,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
                 )
             ]
         )
-        expected_lines = "\n".join(expected_lines)
+        expected_lines = "\n".join(expected_line_list)
 
         with open(self.test_path, "r") as f:
             self.assertEqual(f.read(), expected_lines)
@@ -182,9 +194,9 @@ class EventToCsoundScoreTest(unittest.TestCase):
         pfield_key_to_function_mapping = {
             "p1": lambda event: 100,
             "p2": None,
-            "p3": lambda event: event.duration,
-            "p6": lambda event: event.duration / 2,
-            "p5": lambda event: event.duration * 2,
+            "p3": lambda event: event.duration.duration_in_floats,
+            "p6": lambda event: (event.duration / 2).duration_in_floats,
+            "p5": lambda event: (event.duration * 2).duration_in_floats,
         }
         pfields = self.converter._generate_pfield_mapping(
             pfield_key_to_function_mapping
@@ -193,7 +205,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
 
     def test_ignore_p_field_with_unsupported_type(self):
         # convert simple event with unsupported type (set) for path argument
-        duration = 2
+        duration = 2.0
         event_to_convert = SimpleEventWithPitchAndPathAttribute(
             440,
             duration,
@@ -201,7 +213,7 @@ class EventToCsoundScoreTest(unittest.TestCase):
             set([1, 2, 3]),  # type: ignore
         )
         self.converter.convert(event_to_convert, self.test_path)
-        expected_line = "i 1 0 {} {}".format(
+        expected_line = "i 1 0.0 {} {}".format(
             duration,
             440,
         )

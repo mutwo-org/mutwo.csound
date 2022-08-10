@@ -14,6 +14,7 @@ import natsort  # type: ignore
 from mutwo import core_converters
 from mutwo import core_events
 from mutwo import core_constants
+from mutwo import core_parameters
 from mutwo import csound_converters
 
 __all__ = ("EventToCsoundScore", "EventToSoundFile")
@@ -75,7 +76,7 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
     _default_p_field_dict: PFieldDict = {
         "p1": lambda event: 1,  # default instrument name "1"
         "p2": None,  # default to absolute start time
-        "p3": lambda event: event.duration  # type: ignore
+        "p3": lambda event: event.duration.duration_in_floats  # type: ignore
         if event.duration > 0
         else None,  # default key for duration
     }
@@ -167,7 +168,7 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
     def _convert_simple_event(
         self,
         simple_event: core_events.SimpleEvent,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: core_parameters.abc.Duration,
     ) -> tuple[str, ...]:
         """Extract p-field data from simple event and write one Csound-Score line."""
 
@@ -175,7 +176,7 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
         for nth_p_field, p_field_function in enumerate(self.pfield_tuple):
             # special case of absolute start time initialization
             if nth_p_field == 1 and p_field_function is None:
-                csound_score_line += " {}".format(absolute_entry_delay)
+                csound_score_line += " {}".format(absolute_entry_delay.duration_in_floats)
 
             else:
                 try:
@@ -196,7 +197,7 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
     def _convert_sequential_event(
         self,
         sequential_event: core_events.SequentialEvent,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: core_parameters.abc.Duration,
     ) -> tuple[str, ...]:
         csound_score_line_list = [
             csound_converters.configurations.SEQUENTIAL_EVENT_ANNOTATION
@@ -215,7 +216,7 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
     def _convert_simultaneous_event(
         self,
         simultaneous_event: core_events.SimultaneousEvent,
-        absolute_entry_delay: core_constants.DurationType,
+        absolute_entry_delay: core_parameters.abc.Duration,
     ) -> tuple[str, ...]:
         csound_score_line_list = [
             csound_converters.configurations.SIMULTANEOUS_EVENT_ANNOTATION
@@ -261,7 +262,9 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
         >>> converter.convert(events, 'score.sco')
         """
 
-        csound_score_line_tuple = self._convert_event(event_to_convert, 0)
+        csound_score_line_tuple = self._convert_event(
+            event_to_convert, core_parameters.DirectDuration(0)
+        )
         # convert events to strings (where each string represents one csound score line)
         # write csound score lines to file
         with open(path, "w") as f:
