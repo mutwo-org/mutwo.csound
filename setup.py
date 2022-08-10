@@ -14,7 +14,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 extras_require = {"testing": ["nose", "coveralls"]}
 
 setuptools.setup(
-    name="mutwo.ext-csound",
+    name="mutwo.csound",
     version=VERSION,
     license="GPL",
     description="csound extension for event based framework for generative art",
