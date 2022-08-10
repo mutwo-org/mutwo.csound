@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2022-08-10
+
+### Changed
+- to new `mutwo.core` version with parameter based duration model
+- `mutwo.ext-csound` to `mutwo.csound`
+
+
 ## [0.5.0] - 2022-05-09
 
 ### Changed
