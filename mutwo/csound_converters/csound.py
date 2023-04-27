@@ -63,10 +63,10 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
 
     >>> from mutwo import csound_converters
     >>> my_converter = csound_converters.EventToCsoundScore(
-    >>>     p1=lambda event: 2,
-    >>>     p4=lambda event: event.pitch.frequency,
-    >>>     p5=lambda event: event.volume
-    >>> )
+    ...     p1=lambda event: 2,
+    ...     p4=lambda event: event.pitch.frequency,
+    ...     p5=lambda event: event.volume
+    ... )
 
     For easier debugging of faulty score files, :mod:`mutwo` adds annotations
     when a new :class:`SequentialEvent` or a new :class:`SimultaneousEvent`
@@ -248,18 +248,21 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
         >>> import random
         >>> from mutwo import core_events
         >>> from mutwo import csound_converters
-        >>> from mutwo import music_parameters
         >>> converter = csound_converters.EventToCsoundScore(
-        >>>    p4=lambda event: event.pitch.frequency
-        >>> )
-        >>> events = core_events.SequentialEvent(
-        >>>    [
-        >>>        core_events.SimpleEvent(random.uniform(0.3, 1.2)) for _ in range(15)
-        >>>    ]
-        >>> )
-        >>> for event in events:
-        >>>     event.pitch = music_parameters.DirectPitch(random.uniform(100, 500))
-        >>> converter.convert(events, 'score.sco')
+        ...    p4=lambda event: event.tempo_envelope.duration
+        ... )
+        >>> event = core_events.SequentialEvent(
+        ...    [
+        ...        core_events.SimpleEvent(
+        ...             random.uniform(0.3, 1.2)
+        ...        ) for _ in range(15)
+        ...    ]
+        ... )
+        >>> for e in event:
+        ...     e.tempo_envelope = core_events.TempoEnvelope(
+        ...         [[0, 1], [random.uniform(10, 20), 0]]
+        ...     )
+        >>> converter.convert(event, 'score.sco')
         """
 
         csound_score_line_tuple = self._convert_event(
