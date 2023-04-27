@@ -28,9 +28,9 @@ setuptools.setup(
     ],
     setup_requires=[],
     install_requires=[
-        "mutwo.core>=0.61.2, <1.0.0",
-        "natsort>=5.3.3, <6.0.0",
+        "mutwo.core>=1.0.0, <2.0.0",
+        "natsort>=8.0.0, <9.0.0",
     ],
     extras_require=extras_require,
-    python_requires=">=3.9, <4",
+    python_requires=">=3.10, <4",
 )
