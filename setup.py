@@ -8,7 +8,7 @@ VERSION = version["VERSION"]
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-extras_require = {"testing": ["nose", "coveralls"]}
+extras_require = {"testing": ["pytest>=7.1.1"]}
 
 setuptools.setup(
     name="mutwo.csound",
