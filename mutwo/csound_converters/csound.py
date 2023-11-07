@@ -69,7 +69,7 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
     ... )
 
     For easier debugging of faulty score files, :mod:`mutwo` adds annotations
-    when a new :class:`SequentialEvent` or a new :class:`SimultaneousEvent`
+    when a new :class:`~mutwo.core_events.SequentialEvent` or a new :class:`~mutwo.core_events.SimultaneousEvent`
     starts.
     """
 
