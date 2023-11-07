@@ -176,7 +176,9 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
         for nth_p_field, p_field_function in enumerate(self.pfield_tuple):
             # special case of absolute start time initialization
             if nth_p_field == 1 and p_field_function is None:
-                csound_score_line += " {}".format(absolute_entry_delay.duration_in_floats)
+                csound_score_line += " {}".format(
+                    absolute_entry_delay.duration_in_floats
+                )
 
             else:
                 try:
@@ -322,9 +324,8 @@ class EventToSoundFile(core_converters.abc.Converter):
             score_path = path + ".sco"
 
         self.event_to_csound_score.convert(event_to_convert, score_path)
-        command = "csound -o {}".format(path)
-        for flag in self.flags:
-            command += " {} ".format(flag)
+        flags = " ".join(self.flags)
+        command = f"{csound_converters.configurations.CSOUND_BINARY} -o {path} {flags}"
         command += " {} {}".format(self.csound_orchestra_path, score_path)
 
         os.system(command)

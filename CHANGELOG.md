@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `mutwo.csound_converters.configurations.CSOUND_BINARY` to set path to csound binary
+
+
 ## [0.7.0] - 2023-04-27
 
 ### Changed
