@@ -21,7 +21,7 @@ __all__ = ("EventToCsoundScore", "EventToSoundFile")
 
 SupportedPFieldTypes = typing.Union[core_constants.Real, str]
 SupportedPFieldTypesForTypeChecker = typing.Union[numbers.Real, str]
-PFieldFunction = typing.Callable[[core_events.SimpleEvent], SupportedPFieldTypes]
+PFieldFunction = typing.Callable[[core_events.Chronon], SupportedPFieldTypes]
 PFieldDict = dict[str, typing.Optional[PFieldFunction]]
 
 
@@ -64,19 +64,19 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
     >>> from mutwo import csound_converters
     >>> my_converter = csound_converters.EventToCsoundScore(
     ...     p1=lambda event: 2,
-    ...     p4=lambda event: event.pitch.frequency,
+    ...     p4=lambda event: event.pitch.hertz,
     ...     p5=lambda event: event.volume
     ... )
 
     For easier debugging of faulty score files, :mod:`mutwo` adds annotations
-    when a new :class:`~mutwo.core_events.SequentialEvent` or a new :class:`~mutwo.core_events.SimultaneousEvent`
+    when a new :class:`~mutwo.core_events.Consecution` or a new :class:`~mutwo.core_events.Concurrence`
     starts.
     """
 
     _default_p_field_dict: PFieldDict = {
         "p1": lambda event: 1,  # default instrument name "1"
         "p2": None,  # default to absolute start time
-        "p3": lambda event: event.duration.duration_in_floats  # type: ignore
+        "p3": lambda event: event.duration.beat_count # type: ignore
         if event.duration > 0
         else None,  # default key for duration
     }
@@ -165,24 +165,24 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
     #           private methods (conversion of different event types)        #
     # ###################################################################### #
 
-    def _convert_simple_event(
+    def _convert_chronon(
         self,
-        simple_event: core_events.SimpleEvent,
+        chronon: core_events.Chronon,
         absolute_entry_delay: core_parameters.abc.Duration,
     ) -> tuple[str, ...]:
-        """Extract p-field data from simple event and write one Csound-Score line."""
+        """Extract p-field data from chronon and write one Csound-Score line."""
 
         csound_score_line = "i"
         for nth_p_field, p_field_function in enumerate(self.pfield_tuple):
             # special case of absolute start time initialization
             if nth_p_field == 1 and p_field_function is None:
                 csound_score_line += " {}".format(
-                    absolute_entry_delay.duration_in_floats
+                    absolute_entry_delay.beat_count
                 )
 
             else:
                 try:
-                    p_field_value = p_field_function(simple_event)  # type: ignore
+                    p_field_value = p_field_function(chronon)  # type: ignore
 
                 except AttributeError:
                     # if attribute couldn't be found, just make a rest
@@ -196,40 +196,40 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
 
         return (csound_score_line,)
 
-    def _convert_sequential_event(
+    def _convert_consecution(
         self,
-        sequential_event: core_events.SequentialEvent,
+        consecution: core_events.Consecution,
         absolute_entry_delay: core_parameters.abc.Duration,
     ) -> tuple[str, ...]:
         csound_score_line_list = [
-            csound_converters.configurations.SEQUENTIAL_EVENT_ANNOTATION
+            csound_converters.configurations.CONSECUTION_ANNOTATION
         ]
         csound_score_line_list.extend(
-            super()._convert_sequential_event(sequential_event, absolute_entry_delay)
+            super()._convert_consecution(consecution, absolute_entry_delay)
         )
 
         for _ in range(
-            csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+            csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPOUND
         ):
             csound_score_line_list.append("")
 
         return tuple(csound_score_line_list)
 
-    def _convert_simultaneous_event(
+    def _convert_concurrence(
         self,
-        simultaneous_event: core_events.SimultaneousEvent,
+        concurrence: core_events.Concurrence,
         absolute_entry_delay: core_parameters.abc.Duration,
     ) -> tuple[str, ...]:
         csound_score_line_list = [
-            csound_converters.configurations.SIMULTANEOUS_EVENT_ANNOTATION
+            csound_converters.configurations.CONCURRENCE_ANNOTATION
         ]
         csound_score_line_list.extend(
-            super()._convert_simultaneous_event(
-                simultaneous_event, absolute_entry_delay
+            super()._convert_concurrence(
+                concurrence, absolute_entry_delay
             )
         )
         for _ in range(
-            csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPLEX_EVENT
+            csound_converters.configurations.N_EMPTY_LINES_AFTER_COMPOUND
         ):
             csound_score_line_list.append("")
         return tuple(csound_score_line_list)
@@ -253,15 +253,15 @@ class EventToCsoundScore(core_converters.abc.EventConverter):
         >>> converter = csound_converters.EventToCsoundScore(
         ...    p4=lambda event: event.tempo_envelope.duration
         ... )
-        >>> event = core_events.SequentialEvent(
+        >>> event = core_events.Consecution(
         ...    [
-        ...        core_events.SimpleEvent(
+        ...        core_events.Chronon(
         ...             random.uniform(0.3, 1.2)
         ...        ) for _ in range(15)
         ...    ]
         ... )
         >>> for e in event:
-        ...     e.tempo_envelope = core_events.TempoEnvelope(
+        ...     e.tempo = core_parameters.FlexTempo(
         ...         [[0, 1], [random.uniform(10, 20), 0]]
         ...     )
         >>> converter.convert(event, 'score.sco')

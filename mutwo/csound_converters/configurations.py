@@ -3,11 +3,11 @@
 CSOUND_BINARY = "csound"
 """Path to csound binary."""
 
-SEQUENTIAL_EVENT_ANNOTATION = ";; NEW SEQUENTIAL EVENT\n;;"
-"""Annotation in Csound Score files when a new :class:`SequentialEvent` starts."""
+CONSECUTION_ANNOTATION = ";; NEW CONSECUTION\n;;"
+"""Annotation in Csound Score files when a new :class:`Consecution` starts."""
 
-SIMULTANEOUS_EVENT_ANNOTATION = ";; NEW SIMULTANEOUS EVENT\n;;"
-"""Annotation in Csound Score files when a new :class:`SimultaneousEvent` starts."""
+CONCURRENCE_ANNOTATION = ";; NEW CONCURRENCE\n;;"
+"""Annotation in Csound Score files when a new :class:`Concurrence` starts."""
 
-N_EMPTY_LINES_AFTER_COMPLEX_EVENT = 1
-"""How many empty lines shall be written to a Csound Score file after a :class:`ComplexEvent`."""
+N_EMPTY_LINES_AFTER_COMPOUND = 1
+"""How many empty lines shall be written to a Csound Score file after a :class:`Compound`."""
