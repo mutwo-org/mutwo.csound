@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.8.0] - 2024-04-26
+
+This adds support for the new 'mutwo.core' version.
+
 ### Added
 - `mutwo.csound_converters.configurations.CSOUND_BINARY` to set path to csound binary
 

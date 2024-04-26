@@ -1,4 +1,4 @@
-MAJOR, MINOR, PATCH = 0, 7, 0
+MAJOR, MINOR, PATCH = 0, 8, 0
 
 VERSION = f"{MAJOR}.{MINOR}.{PATCH}"
 """The version of the package ``mutwo.csound``."""
